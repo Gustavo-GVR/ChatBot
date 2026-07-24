@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack - Assistente Financeiro</title>
+
+  <style>
+    :root {
+      --bg-1: #8d1cd8;
+      --bg-2: #0b4adb;
+      --panel: rgba(132, 19, 207, 0.72);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text: #e5eefb;
+      --muted: #94a3b8;
+      --primary: #1562f1;
+      --primary-2: #6d0bee;
+      --assistant: rgba(187, 9, 9, 0.08);
+      --user: linear-gradient(135deg, #4f8cff 0%, #2f6df6 100%);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top left, rgba(79, 140, 255, 0.22), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(47, 109, 246, 0.18), transparent 30%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      color: var(--text);
+      padding: 20px;
+    }
+
+    .chat {
+      width: min(920px, 100%);
+      height: min(92vh, 860px);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #4f8cff, #2f6df6);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 24px rgba(79, 140, 255, 0.35);
+      flex: 0 0 auto;
+    }
+
+    .logo svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
+    }
+
+    .title-wrap {
+      min-width: 0;
+    }
+
+    .title-wrap h1 {
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: #f8fbff;
+    }
+
+    .title-wrap p {
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #dbeafe;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12);
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00)),
+        rgba(2, 6, 23, 0.12);
+    }
+
+    .messages::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .messages::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 14px;
+      animation: fadeUp 0.22s ease-out;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message.bot {
+      justify-content: flex-start;
+    }
+
+    .bubble {
+      max-width: min(78%, 680px);
+      padding: 14px 16px;
+      border-radius: 18px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 15px;
+      letter-spacing: 0.1px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .user .bubble {
+      background: var(--user);
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+
+    .bot .bubble {
+      background: rgba(255, 255, 255, 0.08);
+      color: #eef4ff;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom-left-radius: 6px;
+    }
+
+    .typing {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #cbd5e1;
+      font-style: normal;
+    }
+
+    .typing-dots {
+      display: inline-flex;
+      gap: 5px;
+      margin-left: 2px;
+    }
+
+    .typing-dots span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      opacity: 0.6;
+      animation: blink 1.1s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes blink {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.35;
+      }
+
+      40% {
+        transform: translateY(-4px);
+        opacity: 1;
+      }
+    }
+
+    .footer {
+      padding: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05));
+    }
+
+    .composer {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      background: rgba(15, 23, 42, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      padding: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    textarea {
+      flex: 1;
+      resize: none;
+      min-height: 54px;
+      max-height: 160px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      padding: 10px 8px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    .send-btn {
+      width: 120px;
+      min-height: 54px;
+      border: none;
+      border-radius: 16px;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 12px 24px rgba(47, 109, 246, 0.35);
+      transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
+      flex: 0 0 auto;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .send-btn:active {
+      transform: translateY(0);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      filter: none;
+    }
+
+
+    /* BOTÃO NOVA CONVERSA */
+
+    .new-chat {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .new-chat:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+
+    .hint {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+
+    .welcome {
+      margin: 0 auto 18px;
+      max-width: 720px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 18px 20px;
+      color: #dbeafe;
+    }
+
+
+    .welcome strong {
+      color: #fff;
+    }
+
+
+    @media (max-width:768px) {
+
+      .chat {
+        height: 100vh;
+        border-radius: 0;
+      }
+
+
+      .header {
+        padding: 16px;
+      }
+
+
+      .messages {
+        padding: 16px;
+      }
+
+
+      .bubble {
+        max-width: 88%;
+      }
+
+
+      .status {
+        display: none;
+      }
+
+
+      .send-btn {
+        width: 92px;
+      }
+
+    }
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <div class="chat">
+
+    <div class="header">
+
+      <div class="brand">
+
+        <div class="logo">
+          🤖
+        </div>
+
+        <div class="title-wrap">
+          <h1>FinTrack</h1>
+          <p>Assistente inteligente financeiro</p>
+        </div>
+
+      </div>
+
+
+      <button class="new-chat" id="newChat">
+        Nova Conversa
+      </button>
+
+
+      <div class="status">
+        <span class="status-dot"></span>
+        Online
+      </div>
+
+    </div>
+
+
+    <div class="messages" id="messages">
+
+      <div class="welcome">
+
+        <strong>Olá!</strong>
+        Como posso ajudar você hoje?
+
+      </div>
+
+    </div>
+
+
+
+    <div class="footer">
+
+      <div class="composer">
+
+        <textarea id="question" placeholder="Digite sua mensagem..."></textarea>
+
+
+        <button class="send-btn" id="sendButton">
+          Enviar
+        </button>
+
+
+      </div>
+
+
+      <div class="hint">
+        Pressione Enter para enviar
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+  <script>
+
+
+    const messagesDiv = document.getElementById("messages");
+    const question = document.getElementById("question");
+    const sendButton = document.getElementById("sendButton");
+    const newChat = document.getElementById("newChat");
+
+    let messages = [];
+
+
+
+    function scrollBottom() {
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    }
+
+
+
+    function autoResizeTextarea() {
+
+      question.style.height = "auto";
+
+      question.style.height =
+        Math.min(question.scrollHeight, 160) + "px";
+
+    }
+
+
+
+    function addMessage(text, sender) {
+
+
+      const row = document.createElement("div");
+
+      row.className = "message " + sender;
+
+
+
+      const bubble = document.createElement("div");
+
+      bubble.className = "bubble";
+
+      bubble.innerText = text;
+
+
+
+      row.appendChild(bubble);
+
+      messagesDiv.appendChild(row);
+
+
+
+      scrollBottom();
+
+    }
+
+
+
+    function addTyping() {
+
+
+      const row = document.createElement("div");
+
+      row.className = "message bot";
+
+
+
+      const bubble = document.createElement("div");
+
+      bubble.className = "bubble typing";
+
+
+
+      bubble.innerHTML = `
+
+        Digitando
+
+        <span class="typing-dots">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </span>
+
+    `;
+
+
+
+      row.appendChild(bubble);
+
+      messagesDiv.appendChild(row);
+
+
+      scrollBottom();
+
+
+      return row;
+
+    }
+
+
+
+    async function sendMessage() {
+
+
+      const text = question.value.trim();
+
+
+      if (text === "") return;
+
+
+
+      question.value = "";
+
+      autoResizeTextarea();
+
+
+
+      addMessage(text, "user");
+
+      messages.push({
+        role: "user",
+        content: text
+      });
+
+
+
+      sendButton.disabled = true;
+
+
+
+      const typing = addTyping();
+
+
+
+      try {
+
+        const response = await fetch(
+          "http://localhost:3000/chat",
+          {
+
+            method: "POST",
+
+            headers: {
+
+              "Content-Type": "application/json"
+
+            },
+            body: JSON.stringify({
+
+              mensagem: text,
+              messages: messages
+
+            })
+
+
+          }
+        );
+
+
+        const data = await response.json();
+
+
+        typing.remove();
+
+
+        addMessage(
+          data.response,
+          "bot"
+        );
+
+        messages.push({
+          role: "assistant",
+          content: data.response
+        });
+
+
+
+      } catch (error) {
+
+
+        typing.remove();
+
+
+        addMessage(
+          "Erro ao conectar com a IA.",
+          "bot"
+        );
+
+
+        console.error(error);
+
+      }
+
+
+      sendButton.disabled = false;
+
+      question.focus();
+
+
+    }
+
+
+
+    // Botão enviar
+
+    sendButton.onclick = sendMessage;
+
+
+
+    // Enter envia mensagem
+
+    question.addEventListener(
+      "keydown",
+      (e) => {
+
+
+        if (e.key === "Enter" && !e.shiftKey) {
+
+          e.preventDefault();
+
+          sendMessage();
+
+        }
+
+
+      });
+
+
+
+    // Ajusta tamanho do campo
+
+    question.addEventListener(
+      "input",
+      autoResizeTextarea
+    );
+
+
+
+    // Botão Nova Conversa
+    newChat.onclick = () => {
+
+      messages = [];
+
+      messagesDiv.innerHTML = `
+    <div class="welcome">
+        <strong>Olá!</strong>
+        Como posso ajudar você hoje?
+    </div>
+`;
+
+      question.value = "";
+
+      autoResizeTextarea();
+
+      question.focus();
+
+    };
+
+
+
+    // foco inicial
+
+    question.focus();
+
+    // todo o código JavaScript fica aqui
+
+
+  </script>
+
+</body>
+
+</html>
